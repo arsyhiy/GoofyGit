@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import subprocess
-import sys
 
 def is_git_repo(path):
     return subprocess.run(
@@ -21,32 +20,28 @@ def get_uninitialized_submodules(path):
             text=True
         )
         lines = result.stdout.strip().splitlines()
-        # "-" в начале означает, что подмодуль не клонирован
         return [l for l in lines if l.startswith("-")]
     except Exception:
         return []
 
 def main():
     path = os.getcwd()
-
     if not is_git_repo(path):
-        return  # не репозиторий, молчим
+        return
 
     uninit = get_uninitialized_submodules(path)
     if not uninit:
-        return  # все подмодули уже есть, молчим
+        return
 
-    print("Обнаружены подмодули, которые ещё не клонированы:")
+    print(f"\nОбнаружены неинициализированные подмодули в {path}:")
     for line in uninit:
         print(" ", line)
 
     choice = input("Вы хотите их клонировать? [y/n]: ").strip().lower()
     if choice == "y":
-        subprocess.run(
-            ["git", "submodule", "update", "--init", "--recursive"],
-            cwd=path
-        )
+        subprocess.run(["git", "submodule", "update", "--init", "--recursive"], cwd=path)
         print("Подмодули успешно клонированы.")
 
 if __name__ == "__main__":
     main()
+
